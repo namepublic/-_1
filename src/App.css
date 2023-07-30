@@ -140,6 +140,10 @@
   height: 35px;
 }
 
+.btn-star.active {
+  color: rgb(255,204,0);
+}
+
 .MuiDataGrid-columnHeader {
   background-color: #fff!important;
 }

@@ -11,7 +11,7 @@ interface LocationsPathParams {
   page: string;
   location_name: string;
   robot_id: string;
-  is_starred: string;
+  starredIds: string;
   searchKeyword: string;
 }
 
@@ -41,6 +41,14 @@ export const handlers = [
       
       let searchKeyword: any = req.url.searchParams.get('searchKeyword');
       let location_name: any = req.url.searchParams.get('location_name');
+      // 문제 출제는 is_starred 로 되있었는데
+      // 앞글자가 is 이기 때문에 boolean 값의 의도로 비춰지는데요.
+      // starred_location_ids 를 비춰보았을 때 지금 구성된 백엔드에서는
+      // 유저의 북마크정보를 가지고있지 않는 상태이기 때문에
+      // 프론트에서 북마크정보들을 전달해주는게 맞습니다.
+      // 필드명만 봤을 땐 백엔드에서 각 유저의 북마크 정보를 판단하라는 의도로 보여서
+      // 이 부분은 인터페이스 변경했습니다.
+      let starredIds: any = req.url.searchParams.get('starredIds');
       let robot_id: any = req.url.searchParams.get('robot_id');
       let page: any = Number(req.url.searchParams.get('page'));
 
@@ -49,7 +57,15 @@ export const handlers = [
         return res(ctx.status(400));
       }
 
-      if (location_name) {
+      if (starredIds) {
+        try {
+          // json parse 실패할 수도 있기때문에 try catch 습관화
+          starredIds = starredIds.split(',').map((item: any)=>Number(item));
+          list = list.filter(item => starredIds.includes(item.id));
+        } catch( e) {
+        }
+      }
+      else if (location_name) {
         list = list.filter(item => item.name === location_name);
       }
       if (searchKeyword) {

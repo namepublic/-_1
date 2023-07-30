@@ -7,6 +7,7 @@ import { ButtonBase, Card, TextField } from "@mui/material";
 
 let getRowsCallCount = 0;
 let latestSearchKeyword = '';
+let isRequestingSetStar = false;
 
 function App() {
   const pageSize = 6;
@@ -17,8 +18,9 @@ function App() {
   const [rows, setRows] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [isOpenLocationSelect, setIsOpenLocationSelect] = useState(false);
-  const [activeLocationName, setActiveLocationName] = useState('');
+  const [activeLocationName, setActiveLocationName] = useState<any>('');
   const [locationNameSearchKeyword, setLocationNameSearchKeyword] = useState('');
+  const [stars, setStars] = useState<any>(null);
   
   // DataGrid 컬럼 속성
   const columns = [
@@ -27,9 +29,12 @@ function App() {
       width: 50,
       sortable: false,
       renderCell(params: any) {
+        const isActive = (stars || []).includes(params.row.id);
         return (
-          <ButtonBase className="btn-star">
-            <StarBorder></StarBorder>
+          <ButtonBase
+          className={"btn-star " + (isActive ? 'active' : '')}
+            onClick={()=>setStar(params.row.id)}>
+              {isActive ? <Star></Star> : <StarBorder></StarBorder>}
           </ButtonBase>
         )
       }
@@ -75,14 +80,14 @@ function App() {
   ];
 
   // http 요청으로 로케이션 정보 가져오는 함수
-  const getRows = async (page: any, searchKeyword: any, locationName = '') => {
+  const getRows = async (page: any, searchKeyword: any, locationName: any = '') => {
     return new Promise(async (resolve, reject) => {
       // pk 변수는 요청에 대한 Primary Key 값으로 비동기 작업 중에 새로운 요청이 오면,
       // 가장 마지막 요청의 대한 응답 값을 최종 적용 하기 위해 사용 합니다.
       const pk = ++ getRowsCallCount;
-
+      const starredIds = locationName === -1 ? (stars || []).join(',') : '';
       try {
-        const res = await axios.get("/locations", {params: {page: page, searchKeyword, location_name: locationName}});
+        const res = await axios.get("/locations", {params: {page: page, searchKeyword, location_name: locationName, starredIds }});
         if (pk === getRowsCallCount) {
           const data = res.data;
           
@@ -113,6 +118,45 @@ function App() {
     }
   };
 
+  // 북마크 정보 가져오기
+  const getStars = async () => {
+    try{
+      const res = (await axios.get<any>('/starred_location_ids'));
+      setStars((res.data.location_ids));
+    } catch(e) {
+      console.log(e);
+      setStars([]);
+    }
+  };
+  
+  // 북마크 하기
+  const setStar = async (locationId: number) => {
+    // 1. 중복요청 차단
+    // 2. stars 객체가 null 일 때 즉 아직 북마크 정보 못가져왔을 때 차단
+    if (isRequestingSetStar || !stars) {
+      return;
+    }
+    // 서버에서 응답이 올 때 까지는, stars 변수는 건들지 않습니다.
+    const nextStars = [...stars];
+    if (nextStars.includes(locationId)) {
+      nextStars.splice(nextStars.indexOf(locationId), 1);
+    } else {
+      nextStars.push(locationId);
+    }
+    isRequestingSetStar = true;
+    try{
+      await axios.put<any>('/starred_location_ids', nextStars);
+      setStars(nextStars);
+    } catch(e: any) {
+      console.log(e);
+      // 북마크 에러시 에러메세지 출력
+      if (e && e.response && e.response.data && e.response.data.error_msg) {
+        alert(e.response.data.error_msg)
+      }
+    }
+    isRequestingSetStar = false;
+  };
+
   // 페이지네이션 정보가 변경되었을 때 로케이션 정보를 새로가져옵니다.
   const onChangePageNation = (value: any) => {
     setPaginationModel(value);
@@ -122,6 +166,7 @@ function App() {
   // 이니셜라이징 데이터 요청
   useEffect(()=>{ getLocationNames(); }, []);
   useEffect(()=>{ getRows(0, ''); }, []);
+  useEffect(()=>{ getStars(); }, []);
 
   // 0.5초 마다 검색어 변경 감지 및 값 변경 시 검색요청
   useEffect(() => {
@@ -158,7 +203,7 @@ function App() {
             className="btn-location-select"
             onClick={()=>setIsOpenLocationSelect(!isOpenLocationSelect)}
           >
-            <div>{activeLocationName ? activeLocationName : 'All Location'}</div>
+            <div>{activeLocationName ? (activeLocationName === -1 ? 'Starred' : activeLocationName) : 'All Location'}</div>
             <div style={{flex: 1}}></div>
             { isOpenLocationSelect? (<ArrowDropUp />) : <ArrowDropDown />}
           </ButtonBase>
@@ -179,9 +224,16 @@ function App() {
                       }}>
                     All Locations ({totalLocationCount})
                     </ButtonBase>
-                  <ButtonBase className="btn">
+                  <ButtonBase className={"btn " + (activeLocationName === -1 ? 'active' : '')}
+                      onClick={()=> {
+                        setActiveLocationName(-1);
+                        setIsOpenLocationSelect(false);
+                     
+                        setPaginationModel({ page: 0, pageSize });
+                        getRows(0, searchKeyword, -1);
+                      }}>
                     <Star className="icon-star"></Star>
-                    <span>Starred</span>
+                    <span>Starred ({(stars||[]).length})</span>
                   </ButtonBase>
                   {
                     locationNames
