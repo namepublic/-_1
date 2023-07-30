@@ -9,7 +9,7 @@ let latestSearchKeyword = '';
 let isRunningSearchThread = false;
 
 function App() {
-  const [paginationModel, setPaginationModel] = useState({ pageSize: 6,  page: 0 });
+  const [paginationModel, setPaginationModel] = useState({ pageSize: 6, page: 0 });
   const [totalCount, setTotalCount] = useState(0);
   const [rows, setRows] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -61,7 +61,12 @@ function App() {
         const res = await axios.get("/locations", {params: {page: page, searchKeyword}});
         if (pk === getRowsCallCount) {
           const data = res.data;
-          console.log(data)
+          
+          // 이 코드는 넣고 싶지는 않았는데, DataGrid가 page * 6 의 인덱스 부터 rows 배열을 읽어서
+          // 데이터가 짤려나와 적용 하였습니다. 이런 코드가 아름답진 않네요.
+          data.locations.unshift(...([...new Array(page * 5)].map(item=>({id: Math.random()}))));
+
+          console.log(data.locations);
           setRows(data.locations);
           setTotalCount(data.total_count);
         }
@@ -75,6 +80,8 @@ function App() {
 
   const onChangePageNation = (value: any) => {
     setPaginationModel(value);
+    console.log(value.page)
+    getRows(value.page, searchKeyword);
   }
 
   useEffect(()=>{ getRows(0, ''); }, []);

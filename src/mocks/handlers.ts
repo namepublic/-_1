@@ -43,7 +43,7 @@ export const handlers = [
       }
 
       const total_count = list.length;
-      list = list.slice(page, page + 6);
+      list = list.slice(page * 6, page * 6 + 6);
       
       const result: LocationsResult = {
         total_count,

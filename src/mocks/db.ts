@@ -29,4 +29,44 @@ export const locations: Location[] = [
     name: "Salty restaurant",
     robot: null
   },
+  {
+    id: 3,
+    name: "Salty restaurant",
+    robot: null
+  },
+  {
+    id: 4,
+    name: "Salty restaurant",
+    robot: null
+  },
+  {
+    id: 5,
+    name: "Salty restaurant",
+    robot: null
+  },
+  {
+    id: 6,
+    name: "Salty restaurant",
+    robot: null
+  },
+  {
+    id: 7,
+    name: "Salty restaurant",
+    robot: null
+  },
+  {
+    id: 8,
+    name: "Salty restaurant",
+    robot: null
+  },
+  {
+    id: 9,
+    name: "Salty restaurant",
+    robot: null
+  },
+  {
+    id: 10,
+    name: "Salty restaurant",
+    robot: null
+  },
 ];
