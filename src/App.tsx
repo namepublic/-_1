@@ -116,7 +116,7 @@ function App() {
   // 페이지네이션 정보가 변경되었을 때 로케이션 정보를 새로가져옵니다.
   const onChangePageNation = (value: any) => {
     setPaginationModel(value);
-    getRows(value.page, searchKeyword);
+    getRows(value.page, searchKeyword, activeLocationName);
   }
 
   // 이니셜라이징 데이터 요청
@@ -138,7 +138,7 @@ function App() {
         try {
           // 검색을 새로 시작할 때는 페이지 0으로 돌린다.
           setPaginationModel({ page: 0, pageSize });
-          await getRows(0, searchKeyword);
+          await getRows(0, searchKeyword, activeLocationName);
         } catch(e) { }
       }
       // 0.5초 마다 검색
