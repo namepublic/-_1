@@ -12,6 +12,7 @@ interface LocationsPathParams {
   location_name: string;
   robot_id: string;
   is_starred: string;
+  searchKeyword: string;
 }
 
 export const handlers = [
@@ -19,9 +20,34 @@ export const handlers = [
     "/locations",
     (req, res, ctx) => {
       // Please implement filtering feature here
+      let list = [...locations];
+      
+      let searchKeyword: any = req.url.searchParams.get('searchKeyword');
+      let location_name: any = req.url.searchParams.get('location_name');
+      let robot_id: any = req.url.searchParams.get('robot_id');
+      let page: any = Number(req.url.searchParams.get('page'));
+
+      // 페이지 값 Numberlize 안되는 값이면 에러
+      if (isNaN(page) || page < 0) {
+        return res(ctx.status(400));
+      }
+
+      if (location_name) {
+        list = list.filter(item => item.name === location_name);
+      }
+      if (searchKeyword) {
+        list = list.filter(item => {
+          return item.name.split(' ').join().toLowerCase().includes(searchKeyword) ||
+            (item.robot && item.robot.id.split(' ').join().toLowerCase().includes(searchKeyword))
+        });
+      }
+
+      const total_count = list.length;
+      list = list.slice(page, page + 6);
+      
       const result: LocationsResult = {
-        total_count: 0,
-        locations: locations,
+        total_count,
+        locations: list,
       };
 
       return res(ctx.status(200), ctx.json(result));

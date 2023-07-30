@@ -37,3 +37,55 @@
     transform: rotate(360deg);
   }
 }
+
+
+
+.search-box {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.location-wrap {
+  position: relative;
+  padding: 6px 10px;
+  background-color: rgb(228,228,228);
+  width: 100%;
+  border-radius: 10px;
+  text-align: center;
+  color: #fff;
+}
+.location-wrap.active {
+  background-color: rgb(0,145,255);
+}
+.location-wrap .icon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.robot-wrap {
+  vertical-align: middle;
+}
+.robot-wrap .link {
+  color: rgb(107, 135, 255);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.robot-wrap.active {
+  vertical-align: middle;
+  font-weight: bold;
+}
+.robot-wrap.active::before {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background-color: rgb(0, 209,94);
+  margin-right: 12px;
+  border-radius: 50%;
+}

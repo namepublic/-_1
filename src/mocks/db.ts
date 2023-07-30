@@ -1,7 +1,7 @@
 export interface Location {
   id: number;
   name: string;
-  robot: {
+  robot: null | {
     id: string;
     is_online: boolean;
   };
@@ -23,5 +23,10 @@ export const locations: Location[] = [
       id: "fghij456",
       is_online: false,
     },
+  },
+  {
+    id: 2,
+    name: "Salty restaurant",
+    robot: null
   },
 ];
