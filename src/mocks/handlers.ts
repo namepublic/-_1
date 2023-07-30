@@ -16,6 +16,23 @@ interface LocationsPathParams {
 }
 
 export const handlers = [
+
+  // 셀렉트 박스에 출력할 로케이션 이름 리스트 데이터 API 추가
+  rest.get<DefaultBodyType, any, any>(
+    "/locationnames",
+    (req, res, ctx) => {
+      const counts: any = {};
+      locations.forEach(item => {
+        counts[item.name] = (counts[item.name] || 0) + 1;
+      });
+      const data = Object.keys(counts).sort().map(name => ({name, count: counts[name]}));
+      return res(ctx.status(200), ctx.json({
+        data,
+        total: data.map(item=>item.count).reduce((a,b)=>a+b, 0)
+      }));
+    }
+  ),
+
   rest.get<DefaultBodyType, LocationsPathParams, LocationsResult>(
     "/locations",
     (req, res, ctx) => {
@@ -37,8 +54,8 @@ export const handlers = [
       }
       if (searchKeyword) {
         list = list.filter(item => {
-          return item.name.split(' ').join().toLowerCase().includes(searchKeyword) ||
-            (item.robot && item.robot.id.split(' ').join().toLowerCase().includes(searchKeyword))
+          return item.name.split(' ').join().toLowerCase().includes(searchKeyword.toLowerCase()) ||
+            (item.robot && item.robot.id.split(' ').join().toLowerCase().includes(searchKeyword.toLowerCase()))
         });
       }
 
