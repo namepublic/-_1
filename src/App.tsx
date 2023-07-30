@@ -6,10 +6,10 @@ import { TextField } from "@mui/material";
 
 let getRowsCallCount = 0;
 let latestSearchKeyword = '';
-let isRunningSearchThread = false;
 
 function App() {
-  const [paginationModel, setPaginationModel] = useState({ pageSize: 6, page: 0 });
+  const pageSize = 6;
+  const [paginationModel, setPaginationModel] = useState({ pageSize, page: 0 });
   const [totalCount, setTotalCount] = useState(0);
   const [rows, setRows] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -98,6 +98,7 @@ function App() {
         latestSearchKeyword = searchKeyword;
         try {
           // 검색을 새로 시작할 때는 페이지 0으로 돌린다.
+          setPaginationModel({ page: 0, pageSize });
           await getRows(0, searchKeyword);
         } catch(e) { }
       }
