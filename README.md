@@ -1,5 +1,3 @@
-# Welcome to GitHub Desktop!
+# FE interview take-home project 1
 
-This is your README. READMEs are where you can communicate what your project is and how to use it.
-
-Write your name on line 6, save it, and then head back to GitHub Desktop.
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
