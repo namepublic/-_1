@@ -6,6 +6,7 @@ import { TextField } from "@mui/material";
 
 let getRowsCallCount = 0;
 let latestSearchKeyword = '';
+let isRunningSearchThread = false;
 
 function App() {
   const [paginationModel, setPaginationModel] = useState({ pageSize: 6,  page: 0 });
@@ -50,14 +51,14 @@ function App() {
     { field: 'Location Types', width: 400, sortable: false },
   ];
 
-  const getRows = async () => {
+  const getRows = async (page: any, searchKeyword: any) => {
     return new Promise(async (resolve, reject) => {
       // pk 변수는 요청에 대한 Primary Key 값으로 비동기 작업 중에 새로운 요청이 오면,
       // 가장 마지막 요청의 대한 응답 값을 최종 적용 하기 위해 사용 합니다.
       const pk = ++ getRowsCallCount;
 
       try {
-        const res = await axios.get("/locations", {params: {page: paginationModel.page}});
+        const res = await axios.get("/locations", {params: {page: page, searchKeyword}});
         if (pk === getRowsCallCount) {
           const data = res.data;
           console.log(data)
@@ -70,26 +71,35 @@ function App() {
         reject(e);
       }
     })
-
-  };
-
-  const searchThread = async () => {
-    if (latestSearchKeyword !== searchKeyword) {
-      try {
-        await getRows();
-      } catch(e) { }
-    }
-    // 0.5초 마다 검색
-    setTimeout(() => searchThread(), 500);
   };
 
   const onChangePageNation = (value: any) => {
     setPaginationModel(value);
-
   }
 
-  useEffect(()=>{ getRows(); }, []);
-  useEffect(()=>{ searchThread(); }, []);
+  useEffect(()=>{ getRows(0, ''); }, []);
+  useEffect(() => {
+    let isend = false;
+    const run = async () => {
+      if (isend) {
+        // useEffect 함수 다시 호출
+        // searchKeyword 갱신
+        // 이전 루프 삭제
+        return;
+      }
+      if (latestSearchKeyword !== searchKeyword) {
+        latestSearchKeyword = searchKeyword;
+        try {
+          // 검색을 새로 시작할 때는 페이지 0으로 돌린다.
+          await getRows(0, searchKeyword);
+        } catch(e) { }
+      }
+      // 0.5초 마다 검색
+      setTimeout(run, 500);
+    };
+    run();
+    return () => {isend = true};
+  }, [searchKeyword]);
 
   return (
     <div className="App">
